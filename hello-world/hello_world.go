@@ -5,6 +5,6 @@ func HelloWorld() string {
 	return "Hello, World!"
 }
 
-func main() {
-	HelloWorld()
+func main () {
+    HelloWorld()
 }
