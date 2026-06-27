@@ -1,18 +1,15 @@
 package hamming
 
-import (
-	"errors"
-	"unicode/utf8"
-)
+import "errors"
 
 func Distance(a, b string) (int, error) {
-	cnt := 0
-	if utf8.RuneCountInString(a) != utf8.RuneCountInString(b) {
-		return cnt, errors.New("Lengths differents")
+	if len(a) != len(b) {
+		return 0, errors.New("Lengths differents")
 	}
 
-	for index := range a {
-		if rune(a[index]) != rune(b[index]) {
+	cnt := 0
+	for i := 0; i < len(a); i++ {
+		if a[i] != b[i] {
 			cnt++
 		}
 	}
