@@ -1,44 +1,51 @@
-// Package isbnverifier provides functions to the verification process is used to validate book identification numbers.
-// These normally contain dashes and look like: 3-598-21508-8
+// Package isbnverifier provides functions for verifying ISBN-10 book identification numbers.
+// ISBN-10 may contain hyphens and a check digit that can be a digit or 'X'.
 package isbnverifier
 
-import (
-	"strconv"
-	"strings"
-)
+import "strings"
 
-// IsValidISBN validator ISBN
+// IsValidISBN validates an ISBN-10 string.
 //
-// The ISBN-10 format is 9 digits (0 to 9) plus one check character (either a digit or an X only).
-// In the case the check character is an X, this represents the value '10'.
-// These may be communicated with or without hyphens, and can be checked for their validity
-// by the following formula:
-// (d₁ * 10 + d₂ * 9 + d₃ * 8 + d₄ * 7 + d₅ * 6 + d₆ * 5 + d₇ * 4 + d₈ * 3 + d₉ * 2 + d₁₀ * 1) mod 11 == 0
-// If the result is 0, then it is a valid ISBN-10, otherwise it is invalid.
+// The function accepts ISBN-10 with or without hyphens. The check digit can be
+// a digit (0-9) or 'X' (representing 10) only in the last position.
+//
+// Validation formula:
+//
+//	(d1*10 + d2*9 + d3*8 + d4*7 + d5*6 + d6*5 + d7*4 + d8*3 + d9*2 + d10*1) % 11 == 0
+//
+// Examples:
+//
+//	IsValidISBN("3-598-21508-8")  // returns true
+//	IsValidISBN("3-598-21507-X")  // returns true
+//	IsValidISBN("3-598-21508-9")  // returns false
 func IsValidISBN(isbn string) bool {
-	s := strings.ReplaceAll(isbn, "-", "")
-	if len(s) != 10 {
+	// Remove hyphens as they are optional separators
+	clean := strings.ReplaceAll(isbn, "-", "")
+
+	// ISBN-10 must have exactly 10 characters after removing hyphens
+	if len(clean) != 10 {
 		return false
 	}
 
 	sum := 0
-	for i := 0; i < 10; i++ {
-		var digit int
-		var err error
+	for i, v := range clean {
+		weight := 10 - i // weights: 10, 9, 8, ..., 1
 
-		// The last character can be 'X'
-		if i == 9 && s[i] == 'X' {
-			digit = 10
-		} else {
-			digit, err = strconv.Atoi(string(s[i]))
-			if err != nil {
-				return false
-			}
+		// 'X' is valid only as the check digit (last position) and represents 10
+		if i == 9 && v == 'X' {
+			sum += 10 * weight
+			continue
 		}
 
-		// Multiplied by weight (10, 9, 8, ..., 1)
-		sum += digit * (10 - i)
+		// All other characters must be digits
+		if v < '0' || v > '9' {
+			return false
+		}
+
+		// Convert digit character to its numeric value
+		sum += int(v-'0') * weight
 	}
 
+	// Valid ISBN-10 sum is divisible by 11
 	return sum%11 == 0
 }
