@@ -1,3 +1,3 @@
-module github.com/exercism_golang
+module lasagna
 
-go 1.26.3
+go 1.27
